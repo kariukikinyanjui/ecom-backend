@@ -1,0 +1,9 @@
+name: Auth Service CI
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - users: actions/checkout@v4
+      - run: docker-compose - infrastructure/docker-compose.yml up -d auth-service
+      - run: docker exec auth-service python manage.py test
