@@ -49,5 +49,5 @@ class RefreshTokenView(TokenRefreshView):
         if response.status_code == 200:
             return Response({
                 "access": response.data["access"]
-            }, status=status.HTTP_200_0K)
+            }, status=status.HTTP_200_OK)
         return response
