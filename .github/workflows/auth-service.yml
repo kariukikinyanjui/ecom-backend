@@ -5,5 +5,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - users: actions/checkout@v4
-      - run: docker-compose - infrastructure/docker-compose.yml up -d auth-service
+      - run: docker compose -f infrastructure/docker-compose.yml up -d auth-service
       - run: docker exec auth-service python manage.py test
