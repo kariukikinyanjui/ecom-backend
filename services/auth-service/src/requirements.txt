@@ -1,0 +1,30 @@
+# Auth Service Requirements
+Django==4.2.6
+djangorestframework==3.14.0
+django-environ
+
+# Authentication
+djangorestframework-simplejwt==5.2.2
+python-dotenv==1.0.0
+bcrypt==4.0.1
+argon2-cffi==23.1.0
+
+# Database
+psycopg2-binary==2.9.6
+
+# Security
+cryptography==41.0.3
+django-cors-headers==4.2.0
+
+# API Documantation
+drf-yasg==1.21.6
+
+# Development & Testing
+pytest==7.4.0
+pytest-django==4.5.2
+coverage==7.3.1
+httpie==3.2.2
+
+# Production
+gunicorn==21.2.0
+whitenoise==6.5.0
