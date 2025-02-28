@@ -62,7 +62,7 @@ jobs:
         python manage.py migrate
 
     - name: Run tests
-      working-directory: ./services/auth-service/src
+      working-directory: services/auth-service/src
       env:
         DB_NAME: auth_db
         DB_USER: postgres
