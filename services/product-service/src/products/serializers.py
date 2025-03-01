@@ -41,3 +41,24 @@ class ProductSerializer(serializers.ModelSerializer):
             if not value.startswith('PROD-'):
                 raise serializers.ValidateError("SKU must start with 'PROD-'")
             return value
+
+
+class BulkProductSerializer(ProductSerializer):
+    class Meta(ProductSerializer.Meta):
+        fields = ['id'] + ProductSerializer.Meta.fields
+        read_only_fields = ['id']
+
+
+class BulkProductUpdateSerializer(serializers.ListSerializer):
+    child = BulkProductSerializer()
+
+    def update(self, instances, validated_data):
+        # Perform bulk update logic
+        updated_products = []
+        for instance, data in zip(instance, validated_data):
+            for attr, value in data.items():
+                setattr(instance, attr, value)
+            updated_products.append(instance)
+
+        Product.objects.bulk_update(updated_products, ['price', 'stock', 'is_active'])
+        return updated_products
