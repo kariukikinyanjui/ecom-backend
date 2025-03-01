@@ -3,6 +3,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 from .filters import ProductFilter
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 class ProductListCreateView(generics.ListCreateAPIView):
@@ -77,3 +79,14 @@ class ProductBulkView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"status": "bulk update successful"})
+
+
+class ProductSearchView(generics.ListAPIView):
+    '''Full-text search across product names/descriptions'''
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        query = self.request.query_params.get('q')
+        return Product.objects.annotate(
+            search=SearchVector('name', 'description')
+        ).filter(search=query)

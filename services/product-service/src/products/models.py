@@ -43,11 +43,13 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    search_vector = SearchVectorField(null=True) # For full-text search
 
     class Meta:
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['price', 'created_at']),
+            GinIndex(fields=['search_vector'], name='search_vector_idx'),
         ]
 
     def __str__(self):
