@@ -36,3 +36,21 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     serializer_class = CategorySerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
+
+
+class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Retrieve, update or delete a category instance.
+    - Deleting a category will orphan its children (sets parent to NULL)
+    - Only admin users can modify categories (permission handled via auth-service)
+    '''
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        '''Handle category deletion with child preservation'''
+        children = instance.children.all()
+        children.update(parent=None)
+        instance.delete()
