@@ -1,4 +1,4 @@
-from rest_framework import viewsetet, permissions
+from rest_framework import viewsets, permissions
 from .models import Review, Comment
 from .serializers import ReviewSerializer, CommentSerializer
 from .clients import AuthServiceClient
