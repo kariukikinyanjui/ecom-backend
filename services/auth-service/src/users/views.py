@@ -6,6 +6,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .models import User
 from .serializers import UserSerializer
 from django.contrib.auth import authenticate
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class RegisterView(APIView):
     '''
@@ -15,6 +17,11 @@ class RegisterView(APIView):
 
     Endpoint: /register/
     '''
+    @swagger_auto_schema(
+        request_body=UserSerializer,
+        responses={201: UserSerializer},
+        operation_description="Register a new user and get JWT tokens."
+    )
 
     def post(self, request):
         '''
