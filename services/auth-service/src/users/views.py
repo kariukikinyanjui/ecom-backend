@@ -3,11 +3,19 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework import serializers
 from .models import User
 from .serializers import UserSerializer
 from django.contrib.auth import authenticate
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    user = UserSerializer() # Correct nested serializer declaration
+    refresh = serializers.CharField()
+    access = serializers.CharField()
+
 
 class RegisterView(APIView):
     '''
@@ -19,7 +27,10 @@ class RegisterView(APIView):
     '''
     @swagger_auto_schema(
         request_body=UserSerializer,
-        responses={201: UserSerializer},
+        responses={
+            201: UserSerializer,
+            400: "Bad Request"
+            },
         operation_description="Register a new user and get JWT tokens."
     )
 
@@ -59,8 +70,33 @@ class LoginView(APIView):
             - 200 OK: Returns user data, refresh token, and access token on successful authentication.
             - 401 Unauthorized: Returns an error if authentication fails.
     '''
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password'),
+            },
+            required=['username', 'password']
+        ),
+        responses={
+            200: LoginResponseSerializer,
+            401: "Unauthorized"
+        },
+        operation_description="Authenticate a user and get JWT tokens."
+    )
 
     def post(self, request):
+        '''
+        Handle user login and token generation.
+
+        Args:
+            request (Request): The incoming HTTP request containing user credentials.
+        Return:
+            Response:
+                - 200 OK: Returns user data, refresh token, and access token on successful authentication.
+                - 401 Unauthorized: Returns an error if authentication fails.
+        '''
         username = request.data.get('username')
         password = request.data.get('password')
 
@@ -87,8 +123,28 @@ class RefreshTokenView(TokenRefreshView):
 
     Extends the default `TokenRefreshView` to customize the response format.
 
-    Endpoint: /refresh-token/
+    Endpoint: /refresh/
     '''
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token'),
+            },
+            required=['refresh']
+        ),
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'access': openapi.Schema(type=openapi.TYPE_STRING, description='New access token'),
+                },
+                required=['access']
+            ),
+            401: "Unauthorized"
+        },
+        operation_description="Refresh an expired access token using a valid refresh token"
+    )
 
     def post(self, request, *args, **kwargs):
         '''
@@ -104,9 +160,9 @@ class RefreshTokenView(TokenRefreshView):
 
         # call the superclass to handle token refresh logic
         response = super().post(request, *args, **kwargs)
-        if response.status_code == 200:
+        if response.status_code == status.HTTP_200_OK:
             # customize the response to return only the "access" token
             return Response({
                 "access": response.data["access"]
             }, status=status.HTTP_200_OK)
-        return response
+        return response # Propagate any errors
