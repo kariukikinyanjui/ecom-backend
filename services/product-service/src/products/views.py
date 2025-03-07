@@ -50,3 +50,26 @@ class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         children = instance.children.all()
         children.update(parent=None)
         instance.delete()
+
+
+class ProductBulkView(generics.GenericAPIView):
+    """Bulk product create/update operations"""
+    serializer_class = BulkProductUpdateSerializer
+
+    @action(detail=False, methods=['post'])
+    def bulk_create(self, request):
+        serializer = BulkProductSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        Product.objects.bulk_create([
+            Product(**item) for item in serializer.validated_data
+        ])
+        return Response({"status": "bulk create successful"}, status=201)
+
+    @action(detail=False, methods=['patch'])
+    def bulk_update(self, request):
+        product_ids = [item.get('id') for item in request.data]
+        instances = Product.objects.filter(id__in=product_ids)
+        serializer = self.get_serializer(instances, data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"status": "bulk update successful"})
