@@ -75,3 +75,14 @@ class ProductBulkView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"status": "bulk update successful"})
+
+
+class ProductSearchView(generics.ListAPIView):
+    """Full-text search across product names/descriptions"""
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        query = self.request.query_params.get('q')
+        return Product.objects.annotate(
+            search=SearchVector('name', 'description')
+        ).filter(search=query)
