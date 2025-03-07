@@ -28,3 +28,5 @@ httpie==3.2.2
 # Production
 gunicorn==21.2.0
 whitenoise==6.5.0
+setuptools
+coreapi
