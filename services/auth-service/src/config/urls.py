@@ -13,18 +13,6 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
-    # Add JWT security scheme configuration
-    components={
-        "securitySchemes": {
-            "BearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-                "description": "JWT Authorization header using the Bearer scheme",
-            }
-        }
-    },
-    security=[{"BearerAuth": []}],
 )
 
 urlpatterns = [
