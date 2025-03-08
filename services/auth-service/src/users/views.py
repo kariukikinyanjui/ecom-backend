@@ -71,20 +71,30 @@ class LoginView(APIView):
             - 401 Unauthorized: Returns an error if authentication fails.
     '''
     @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
-                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password'),
-            },
-            required=['username', 'password']
-        ),
-        responses={
-            200: LoginResponseSerializer,
-            401: "Unauthorized"
-        },
-        operation_description="Authenticate a user and get JWT tokens."
-    )
+            operation_description="Authenticate user and get tokens",
+            request_body=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                required=['username', 'password'],
+                properties={
+                    'username': openapi.Schema(type=openapi.TYPE_STRING),
+                    'password': openapi.Schema(type=openapi.TYPE_STRING),
+                }
+            ),
+            responses={
+                200: openapi.Response(
+                    description="Authentication successful",
+                    schema=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'user': UserSerializer(),
+                            'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+                            'access': openapi.Schema(type=openapi.TYPE_STRING),
+                        }
+                    )
+                ),
+                401: "Invalid credentials"
+            }
+     ) 
 
     def post(self, request):
         '''
@@ -126,24 +136,26 @@ class RefreshTokenView(TokenRefreshView):
     Endpoint: /refresh/
     '''
     @swagger_auto_schema(
+        operation_description='Refresh access token',
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
+            required=['refresh'],
             properties={
-                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token'),
-            },
-            required=['refresh']
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+            }
         ),
         responses={
-            200: openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'access': openapi.Schema(type=openapi.TYPE_STRING, description='New access token'),
-                },
-                required=['access']
+            200: openapi.Response(
+                description='Token refreshed successfully',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'access': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
             ),
-            401: "Unauthorized"
-        },
-        operation_description="Refresh an expired access token using a valid refresh token"
+            401: 'Invalid or expired refresh token'
+        }
     )
 
     def post(self, request, *args, **kwargs):
@@ -160,7 +172,7 @@ class RefreshTokenView(TokenRefreshView):
 
         # call the superclass to handle token refresh logic
         response = super().post(request, *args, **kwargs)
-        if response.status_code == status.HTTP_200_OK:
+        if response.status_code == 200:
             # customize the response to return only the "access" token
             return Response({
                 "access": response.data["access"]
