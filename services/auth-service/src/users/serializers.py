@@ -21,7 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
             'last_login'
         )
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
+            'is_staff': {'read_only': True}
         }
 
     def create(self, validated_data):
