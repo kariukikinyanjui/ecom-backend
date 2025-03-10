@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -81,17 +82,7 @@ class LoginView(APIView):
                 }
             ),
             responses={
-                200: openapi.Response(
-                    description="Authentication successful",
-                    schema=openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'user': UserSerializer(),
-                            'refresh': openapi.Schema(type=openapi.TYPE_STRING),
-                            'access': openapi.Schema(type=openapi.TYPE_STRING),
-                        }
-                    )
-                ),
+                200: LoginResponseSerializer,
                 401: "Invalid credentials"
             }
      ) 
@@ -178,3 +169,13 @@ class RefreshTokenView(TokenRefreshView):
                 "access": response.data["access"]
             }, status=status.HTTP_200_OK)
         return response # Propagate any errors
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "username": request.user.username,
+            "email": request.user.email
+        })
