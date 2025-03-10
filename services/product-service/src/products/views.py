@@ -3,8 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
+from .serializers import ProductSerializer, CategorySerializer, BulkProductUpdateSerializer
 from .filters import ProductFilter
+from .permissions import IsAdminUser
 
 class ProductListCreateView(generics.ListCreateAPIView):
     """
@@ -18,6 +19,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
     filterset_class = ProductFilter
     ordering_fields = ['price', 'created_at']
     ordering = ['-created_at']  # Default ordering
+    permission_classes = [IsAdminUser] # Auth via auth-service
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """Detailed product operations with soft delete support"""
