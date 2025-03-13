@@ -1,0 +1,23 @@
+services:
+  review-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: review_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - review-db-data:/var/lib/postgresql/data
+
+  review-service:
+    build: .
+    ports:
+      - "8004:8000"
+    env_file:
+      - .env
+    depends_on:
+      - review-db
+
+volumes:
+  review-db-data:
